@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "demo-server": {
+      "command": "python",
+      "args": ["${workspaceFolder}/server.py"],
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      }
+    }
+  }
+}

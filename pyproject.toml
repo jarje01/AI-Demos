@@ -1,0 +1,19 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mcp-demo-server"
+version = "0.1.0"
+description = "A simple MCP server demo"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp>=1.0.0",
+]
+
+[project.scripts]
+mcp-demo-server = "server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]

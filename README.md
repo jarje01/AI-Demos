@@ -1,16 +1,39 @@
 # FX ML Trading System — EUR/USD
 
-A complete rules-based FX trading system backed by a Machine Learning model.
-Supports historical model training, out-of-sample backtesting, and walk-forward
-validation for realistic performance estimation.
+A practical FX ML pipeline for EUR/USD with backtesting, walk-forward validation,
+live signal generation, and optional Polymarket-derived macro sentiment features.
+
+## At a Glance
+
+- **Primary goal**: Generate disciplined Long/Short/Flat FX signals with risk controls.
+- **Core stack**: OANDA/Yahoo data → feature engineering → ML probabilities → rules filters → backtest/live outputs.
+- **New integration**: Optional Polymarket snapshot feed merged leak-safely into FX bars.
+- **Dashboards**: FX operations dashboard plus prediction-market edge scanner dashboard.
+
+## Quick Start
+
+```bash
+pip install -r requirements.txt
+python main.py --mode train --profile balanced --refresh-data
+python main.py --mode backtest --profile balanced --refresh-data
+python main.py --mode live --profile balanced --refresh-data
+```
+
+Open dashboards:
+
+```bash
+streamlit run dashboard.py
+python -m streamlit run polymarket_dashboard.py --server.port 8503
+```
+
+## Repository Guide
+
+- **Runbook**: [Typical Daily Workflow](#typical-daily-workflow), [Typical Weekly Workflow](#typical-weekly-workflow), [Typical Monthly Workflow](#typical-monthly-workflow)
+- **Architecture**: [Architecture (with Polymarket integration)](#architecture-with-polymarket-integration)
+- **Usage commands**: [Usage](#usage)
+- **PM maintenance**: [FX + Polymarket feature MVP](#fx--polymarket-feature-mvp)
 
 ---
-
-## Operations Runbook
-
-- [Typical Daily Workflow](#typical-daily-workflow)
-- [Typical Weekly Workflow](#typical-weekly-workflow)
-- [Typical Monthly Workflow](#typical-monthly-workflow)
 
 ## System Architecture
 
@@ -73,45 +96,45 @@ Legend:
 ```mermaid
 flowchart LR
     subgraph Sources[Data Sources]
-        OANDA[OANDA Candles/Quotes]
+        OANDA[OANDA Candles and Quotes]
         Yahoo[Yahoo Finance Fallback]
         PMAPI[Polymarket Gamma API]
     end
 
-    subgraph Ingestion[Ingestion & Storage]
-        DL[data_loader.py\ndownload_data()]
-        PMCollect[maintenance.py / collect_polymarket_snapshot.py]
-        PMStore[(data/polymarket_macro_snapshots.csv)]
-        PriceCache[(data/EURUSD_X_1h.parquet)]
+    subgraph Ingestion[Ingestion and Storage]
+        DL[Data Loader]
+        PMCollect[Snapshot Collector]
+        PMStore[(Polymarket Snapshot History)]
+        PriceCache[(FX Price Cache)]
     end
 
     subgraph Enrichment[Feature Enrichment]
-        PMMerge[add_polymarket_features()\n(leak-safe backward asof merge)]
-        FE[features.py\nbuild_features()]
+        PMMerge[Polymarket Feature Merge]
+        FE[Feature Builder]
     end
 
-    subgraph Modeling[Modeling & Signals]
-        Train[main.py --mode train\nFXModel.fit()]
-        SavedModel[(models/fx_model.pkl)]
-        Predict[main.py --mode backtest/live\nget_signal_probabilities()]
-        Rules[signals.py\nTrend/ATR/RSI/ADX Filters]
-        SignalOut[Final Signal\nLong / Short / Flat]
+    subgraph Modeling[Modeling and Signals]
+        Train[Model Training]
+        SavedModel[(Saved Model)]
+        Predict[Model Inference]
+        Rules[Rules Filters]
+        SignalOut[Final Signal Long Short Flat]
     end
 
-    subgraph Execution[Backtest & Live Outputs]
-        BT[backtest.py\nPnL + Risk Controls]
-        Live[step_live_signal()]
-        Metrics[(results/backtest_metrics.json)]
-        Signals[(results/signals_latest.csv)]
-        LiveJSON[(results/live_signal_latest.json)]
-        Plots[(plots/*.png)]
+    subgraph Execution[Backtest and Live Outputs]
+        BT[Backtest Engine]
+        Live[Live Signal Step]
+        Metrics[(Backtest Metrics)]
+        Signals[(Signals CSV)]
+        LiveJSON[(Live Signal JSON)]
+        Plots[(Plots)]
     end
 
-    subgraph Ops[Ops / UI]
-        FXDash[dashboard.py\nFX operations dashboard]
-        PMEdge[polymarket_edge.py\nedge scanner]
-        PMDash[polymarket_dashboard.py]
-        PMCand[(results/polymarket_edge_candidates.csv)]
+    subgraph Ops[Operations and UI]
+        FXDash[FX Dashboard]
+        PMEdge[Prediction Market Scanner]
+        PMDash[Prediction Market Dashboard]
+        PMCand[(Edge Candidates CSV)]
     end
 
     OANDA --> DL

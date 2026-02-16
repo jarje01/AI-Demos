@@ -1,0 +1,39 @@
+# --- Secrets / local config ---
+.env
+.env.*
+!.env.example
+
+# --- Python environment / cache ---
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- Jupyter / editor noise ---
+.ipynb_checkpoints/
+.DS_Store
+Thumbs.db
+
+# --- Project-generated artifacts ---
+data/*.parquet
+data/polymarket_macro_snapshots.csv
+
+models/*.pkl
+models/*.joblib
+
+plots/*.png
+plots/*.jpg
+plots/*.jpeg
+plots/*.svg
+
+results/*.csv
+results/*.json
+results/*.pkl
+
+# Keep optional tracked example priors file (if present)
+!results/polymarket_priors_example.csv

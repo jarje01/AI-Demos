@@ -9,6 +9,7 @@ live signal generation, and optional Polymarket-derived macro sentiment features
 - **Core stack**: OANDA/Yahoo data → feature engineering → ML probabilities → rules filters → backtest/live outputs.
 - **New integration**: Optional Polymarket snapshot feed merged leak-safely into FX bars.
 - **Dashboards**: FX operations dashboard plus prediction-market edge scanner dashboard.
+- **Cross-market workflow**: `cross_market_arbitrage_scanner.ipynb` + `kalshi_bets_dashboard.py` for ranked Kalshi bet recommendations.
 
 ## Quick Start
 
@@ -24,6 +25,26 @@ Open dashboards:
 ```bash
 streamlit run dashboard.py
 python -m streamlit run polymarket_dashboard.py --server.port 8503
+python -m streamlit run arbitrage_dashboard.py --server.port 8501
+python -m streamlit run kalshi_bets_dashboard.py --server.port 8502
+```
+
+### Arbitrage dashboard: start/stop
+
+Start:
+
+```bash
+python -m streamlit run arbitrage_dashboard.py --server.port 8501
+```
+
+Stop:
+
+- In the terminal where it is running, press `Ctrl+C`.
+- If needed on Windows, find and kill the process bound to port `8501`:
+
+```bash
+netstat -ano | findstr :8501
+taskkill /PID <PID_FROM_NETSTAT> /F
 ```
 
 ## Repository Guide
@@ -275,6 +296,30 @@ Output:
 
 Dashboard note:
 - In `polymarket_dashboard.py`, when provider is `kalshi`, the **Use looser Kalshi preset** button enables a discovery mode (higher recall, lower precision).
+
+### Cross-market arbitrage notebook + Kalshi top bets dashboard
+
+Use the notebook to generate matched Kalshi/Polymarket opportunities and a Kalshi-only bet list.
+
+Run flow:
+1. Open `cross_market_arbitrage_scanner.ipynb`.
+2. Run the pipeline cells that generate exports (open prices → joined matches → top opportunities → Kalshi-only recommendations).
+3. Confirm these outputs are refreshed:
+    - `results/kalshi_polymarket_question_join.csv`
+    - `results/kalshi_polymarket_top_arb_opportunities.csv`
+    - `results/kalshi_only_bet_recommendations.csv`
+
+Launch the dashboard:
+
+```bash
+python -m streamlit run kalshi_bets_dashboard.py --server.port 8502
+```
+
+What it shows:
+- Top ~30 recommended Kalshi bets (configurable)
+- Side (`BUY_YES_KALSHI` / `BUY_NO_KALSHI`), confidence, and reason text
+- Key decision fields: `abs_price_gap`, `drift_score`, `expected_value_kalshi_only`, liquidity scores, and risk notes
+- Sidebar filters and CSV download of the displayed rows
 
 Optional custom priors CSV format (`market_id,fair_yes_prob`):
 
